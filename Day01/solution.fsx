@@ -3,16 +3,15 @@
 open Common
 open System.IO
 
-type Move = 
+type Instruction = 
   | Left of int
   | Right of int
 
 [<CompilationRepresentation(CompilationRepresentationFlags.ModuleSuffix)>]
-module Move = 
-
+module Instruction = 
   let distance move = match move with | Left d | Right d -> d
 
-  let parseMove (s : string) = 
+  let parse (s : string) = 
     let parseCharArray = Array.ofList >> Seq.map(toString) >> String.concat "" >> Int.parse
     match s |> Seq.toList with 
     | 'L' :: xs -> xs |> parseCharArray |> Left
@@ -41,7 +40,7 @@ module Direction =
     | Right _ ->  turnRight
         
 let walk move (state, prePath) = 
-  let distance = move |> Move.distance
+  let distance = move |> Instruction.distance
   match state.Direction with
   | North -> ({ state with Y = state.Y + distance}, Seq.append prePath (seq { for i in 1..distance do yield (state.X, state.Y + i)})) 
   | South -> ({ state with Y = state.Y - distance}, Seq.append prePath (seq { for i in 1..distance do yield (state.X, state.Y - i)}))
@@ -54,7 +53,7 @@ let moveFold state move = state |> State.map(turn move) |> walk move
 let instructions = 
   File.ReadAllText(__SOURCE_DIRECTORY__ + "/input").Split([|','|])
   |> Seq.map(String.trim)
-  |> Seq.map(Move.parseMove)
+  |> Seq.map(Instruction.parse)
 
 let initial = ({ X = 0; Y = 0; Direction = North}, Seq.empty)
 
@@ -65,13 +64,12 @@ let partOne =
   |> Seq.fold(moveFold) initial
   |> fst
   |> fun s -> minMoves(s.X, s.Y)
-
 let firstDuplicate sequence =     
   let rec firstDupInner seq visited = 
     let head = seq |> Seq.head
     match visited |> Set.contains head with 
     | true -> head
-    | false -> firstDupInner (Seq.tail seq) (visited |> Set.add head)
+    | false -> firstDupInner (Seq.tail seq) (visited |> Set.add (head |> log "Step"))
   firstDupInner sequence Set.empty
 
 let partTwo = 
