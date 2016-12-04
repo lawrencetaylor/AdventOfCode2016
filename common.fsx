@@ -2,6 +2,11 @@ module String =
 
   let trim (s : string) = s.Trim()
   let isNullOrWhiteSpace (s : string) = System.String.IsNullOrWhiteSpace s
+  let split c (s : string) = s.Split([|c|]) |> Seq.ofArray
+  let ofChars : seq<char> -> string = Array.ofSeq >> System.String
+  let contains (sub : string) (str : string) = str.IndexOf(sub) >= 0 
+
+
 
 module Int = 
   let parse (s : string) = System.Int32.Parse(s)
@@ -12,6 +17,8 @@ module Int =
 
 let toString a = a.ToString()
 
+let modulo s y = y % s
+let minus s y = y - s
 let log label a= 
   printf "%s %A" label a
   a
