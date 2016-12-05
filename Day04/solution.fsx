@@ -27,6 +27,7 @@ module Room =
         match m |> Map.tryFind x with
         | None -> checkSumInner xs (m |> Map.add x 1)
         | Some v -> checkSumInner xs (m |> Map.add x (v+1))
+
     checkSumInner (room.Name |> Seq.filter((<>) ' ') |> List.ofSeq) Map.empty
     |> Map.toSeq
     |> Seq.sortBy(fun a -> (- snd a, fst a))
@@ -36,13 +37,14 @@ module Room =
     |> System.String
     |> (=) room.CheckSum
 
-  let private rotateChar (times : int) (c : char) = 
-    c |> System.Convert.ToInt32 |> minus 97  |> (+) times |> modulo 26 |> (+) 97 |> System.Convert.ToChar
+  let private rotateChar (times : int) : char -> char = 
+    System.Convert.ToInt32 
+    >> minus (97 - times)  
+    >> modulo 26 
+    >> (+) 97 
+    >> System.Convert.ToChar
 
-  let private rotateWord times (word : string) = 
-    word 
-    |> Seq.map(rotateChar times)
-    |> String.ofChars
+  let private rotateWord times = Seq.map(rotateChar times)  >> String.ofChars
 
   let decrypt (room : Room) = 
     { room with 
