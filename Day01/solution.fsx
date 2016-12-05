@@ -17,7 +17,8 @@ module Instruction =
     | 'L' :: xs -> xs |> parseCharArray |> Left
     | 'R' :: xs -> xs |> parseCharArray |> Right
 
-type Position = { X : int; Y : int; Direction : Direction }
+type MyState = { Position : Position ; Direction : Direction }
+and Position = int*int
 and Direction = North | West | South | East
 
 [<CompilationRepresentation(CompilationRepresentationFlags.ModuleSuffix)>]
@@ -41,11 +42,12 @@ module Direction =
         
 let walk move (state, prePath) = 
   let distance = move |> Instruction.distance
+  let (x,y) = state.Position
   match state.Direction with
-  | North -> ({ state with Y = state.Y + distance}, Seq.append prePath (seq { for i in 1..distance do yield (state.X, state.Y + i)})) 
-  | South -> ({ state with Y = state.Y - distance}, Seq.append prePath (seq { for i in 1..distance do yield (state.X, state.Y - i)}))
-  | East ->  ({ state with X = state.X + distance}, Seq.append prePath (seq { for i in 1..distance do yield (state.X + i, state.Y)}))
-  | West ->  ({ state with X = state.X - distance}, Seq.append prePath (seq { for i in 1..distance do yield (state.X - i, state.Y)}))
+  | North -> ({ state with Position = (x, y + distance)}, Seq.append prePath (seq { for i in 1..distance do yield (x, y + i)})) 
+  | South -> ({ state with Position = (x, y - distance)}, Seq.append prePath (seq { for i in 1..distance do yield (x, y - i)}))
+  | East ->  ({ state with Position = (x + distance, y)}, Seq.append prePath (seq { for i in 1..distance do yield (x + i, y)}))
+  | West ->  ({ state with Position = (x - distance, y)}, Seq.append prePath (seq { for i in 1..distance do yield (x - i, y)}))
 
 let turn move state = { state with Direction = state.Direction |> Direction.turn move}
 let moveFold state move = state |> State.map(turn move) |> walk move
@@ -55,7 +57,7 @@ let instructions =
   |> Seq.map(String.trim)
   |> Seq.map(Instruction.parse)
 
-let initial = ({ X = 0; Y = 0; Direction = North}, Seq.empty)
+let initial = ({ Position = (0,0); Direction = North}, Seq.empty)
 
 let minMoves (x, y) = (Int.abs x) + (Int.abs y)
 
@@ -63,18 +65,18 @@ let partOne =
   instructions
   |> Seq.fold(moveFold) initial
   |> fst
-  |> fun s -> minMoves(s.X, s.Y)
+  |> fun s -> minMoves s.Position
 let firstDuplicate sequence =     
   let rec firstDupInner seq visited = 
     let head = seq |> Seq.head
     match visited |> Set.contains head with 
     | true -> head
-    | false -> firstDupInner (Seq.tail seq) (visited |> Set.add (head |> log "Step"))
+    | false -> firstDupInner (Seq.tail seq) (visited |> Set.add head)
   firstDupInner sequence Set.empty
 
 let partTwo = 
   instructions
-  |> Seq.fold(moveFold) ({ X = 0; Y = 0; Direction = North}, Seq.empty)
+  |> Seq.fold(moveFold) ({ Position = (0,0); Direction = North}, Seq.empty)
   |> snd
   |> firstDuplicate
   |> minMoves
