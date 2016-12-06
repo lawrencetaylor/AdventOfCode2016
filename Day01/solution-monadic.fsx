@@ -5,9 +5,11 @@ open Common
 open Solution
 
 (*
-The problem with my previous soution to this problem was that to solve the second part I had to pollute my code for the first part - I had to carry about this sequence of points on the gird I had already visited - something which was not needed for Part 1.
+The problem with my previous soution to this problem was that to solve the second part I had to pollute my code for the first part.
+I had to carry about this sequence of points on the gird I had already visited - something which was not needed for Part 1.
 
-The core step in the problem is defined in the "execute" function:
+The fundamentals of the problem is managing the navigation around the grid in response to instructions.
+The core logic of this is defined in the "execute" function:
 *)
      
 let walk move state = 
@@ -23,9 +25,12 @@ let walk move state =
 let execute i = turn i >> walk i
 
 (*
-  The complexity in Part 2 is that we need to carry around some extra baggage - the signature of "execute" doesn't give us everything we need - we need to attach some "side effect" (in the form of a tuple) to the output of this computation.
+  The complexity in Part 2 is that we need to carry around some extra baggage.
+  Because the signature of "execute" doesn't give us everything we need, we need to attach 
+  some "side effect" (in the form of a tuple) to the output of this computation.
 
-  In the specific case of Part 2, this state is the sequence of points that I am visiting.  In part 1, we can consider the degenerate case when the side effect is `unit`.
+  In the specific case of Part 2, this state is the sequence of points that I am visiting.  
+  In part 1, we can consider the degenerate case when the side effect is `unit`.
 *)
 type StateComputation<'a> = Computation of (MyState -> MyState*'a)
 
@@ -65,13 +70,19 @@ let instructions =
   |> Seq.map(String.trim >> Instruction.parse)
 
 (*
-  What's interesting, is that in both parts, the StateComputation functor can be given a monoidal structure, e.g. I can go
-    ( StateComputation<unit> , StateComputation<unit> ) -> StateComputation<unit>           (Part 1) simply by chaining the "moves" with the 'unit' side effect.
-    ( StateComputation<seq<'a>> , StateComputation<seq<'a>> ) -> StateComputation<seq<'a>>  (Part 2) by chaining the moves an concatentating the sequences.
+  What's interesting, is that in both parts, the StateComputation functor 
+  can be given a monoidal structure, e.g. I can go
+
+    (Part 1) simply by chaining the "moves" with the 'unit' side effect.
+    ( StateComputation<unit> , StateComputation<unit> ) -> StateComputation<unit>      
+
+    (Part 2) by chaining the moves an concatentating the sequences.     
+    ( StateComputation<seq<'a>> , StateComputation<seq<'a>> ) -> StateComputation<seq<'a>>  
 
   I *believe* this is translated as saying that the StateComputation functor (which is actually a monad), is an Additive Monoid.
 
-  We use this monoidal structure to reduce a sequence of StateComputation<_> to a single StateComputation<_>, which we then run using our starting point as it's parameter.
+  We use this monoidal structure to reduce a sequence of StateComputation<_> to a single StateComputation<_>, 
+  which we then run using our starting point as it's parameter.
 *)
 
 let partOne = 

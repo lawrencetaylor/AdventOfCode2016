@@ -29,11 +29,11 @@ let getPassword (md5s : seq<string>) =
   let isPasswordFull a = a |> Seq.forall((<>) ' ')
 
   seq { for md5 in md5s do
-          match md5 |> log "MD5" |> String.charAt 5 |> toString |> Int.tryParse with
+          match md5 |> String.charAt 5 |> toString |> Int.tryParse with
           | Some i when i < 8 -> 
             match pwd.[i] with
             | ' ' -> 
-              pwd.[i] <- (md5 |> String.charAt 6 |> log "Character")
+              pwd.[i] <- (md5 |> String.charAt 6)
               match isPasswordFull pwd with
               | true -> yield pwd |> String.ofChars
               | false -> ()
