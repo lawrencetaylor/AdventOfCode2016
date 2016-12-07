@@ -79,7 +79,7 @@ let instructions =
     (Part 2) by chaining the moves an concatentating the sequences.     
     ( StateComputation<seq<'a>> , StateComputation<seq<'a>> ) -> StateComputation<seq<'a>>  
 
-  I *believe* this is translated as saying that the StateComputation functor (which is actually a monad), is an Additive Monoid.
+  I *believe* this is translated as saying that the StateComputation functor (which is actually a monad), is a Transversable Functor.
 
   We use this monoidal structure to reduce a sequence of StateComputation<_> to a single StateComputation<_>, 
   which we then run using our starting point as it's parameter.
