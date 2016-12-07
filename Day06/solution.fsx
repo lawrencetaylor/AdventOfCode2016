@@ -2,25 +2,6 @@
 
 open Common
 
-let input = [
-"eedadn"
-"drvtee"
-"eandsr"
-"raavrd"
-"atevrs"
-"tsrnev"
-"sdttsa"
-"rasrtv"
-"nssdts"
-"ntnada"
-"svetve"
-"tesnvt"
-"vntsnd"
-"vrdear"
-"dvrsen"
-"enarar"
-]
-
 let parse sortF (strings : seq<string>) = 
   seq {
     for str in strings do
@@ -38,5 +19,5 @@ let parse sortF (strings : seq<string>) =
       >> fst)
   |> String.ofChars
 
-let partOne = System.IO.File.ReadAllLines(__SOURCE_DIRECTORY__ + "/input") |> parse id
-let partTwo = System.IO.File.ReadAllLines(__SOURCE_DIRECTORY__ + "/input") |> parse (fun x -> -x)
+let partOne = System.IO.File.ReadAllLines(__SOURCE_DIRECTORY__ + "/input") |> parse id // brhailro
+let partTwo = System.IO.File.ReadAllLines(__SOURCE_DIRECTORY__ + "/input") |> parse (~-) //xhnqpqql

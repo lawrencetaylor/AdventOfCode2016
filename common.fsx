@@ -7,6 +7,7 @@ module String =
   let charAt i (str : string) = str.ToCharArray().[i]
   let toBytes : string -> byte[] = System.Text.Encoding.ASCII.GetBytes
   let contains (sub : string) (str : string) = str.IndexOf(sub) >= 0 
+  let rev (str : string) = str |> Seq.rev |> ofChars 
 
 
 
