@@ -27,8 +27,11 @@ let log label a=
   printfn "%s %A" label a
   a
 
-type State<'a, 's> = 'a*'s
-
-[<CompilationRepresentation(CompilationRepresentationFlags.ModuleSuffix)>]
-module State = 
-    let map f (a, b) = (f a, b)
+module Regex = 
+  let tryMatch pattern str  = 
+    let m = System.Text.RegularExpressions.Regex.Match(str, pattern)
+    match m.Success with
+    | true -> 
+      let x::xs= [ for g in m.Groups -> g.Value ]
+      Some xs
+    | false -> None
