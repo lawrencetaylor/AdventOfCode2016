@@ -18,6 +18,7 @@ module Instruction =
   let private (|IsRotateRow|_|) = 
     Regex.tryMatch "rotate row y=(\d*) by (\d*)"
     >> Option.map(fun [x;y] -> Int.parse x, Int.parse y)
+
   let private (|IsRotateColumn|_|) = 
     Regex.tryMatch "rotate column x=(\d*) by (\d*)"
     >> Option.map(fun [x;y] -> Int.parse x, Int.parse y)
@@ -48,11 +49,11 @@ type Display(x : int,y : int) =
             yield display.[rY, i] <- shiftedRow.[i]
     }
 
-  let rotateCol rX shift = 
-      let col = Array.init y (fun i -> display.[i,rX])
+  let rotateCol cX shift = 
+      let col = Array.init y (fun i -> display.[i,cX])
       let shiftedCol = Array.init y (fun i -> col.[(i-shift + y) % y])
       seq { for i in [0..maxRowIndex] do
-              yield display.[i, rX] <- shiftedCol.[i]
+              yield display.[i, cX] <- shiftedCol.[i]
       }
 
   let print () = 
