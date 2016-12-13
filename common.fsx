@@ -3,13 +3,11 @@ module String =
   let trim (s : string) = s.Trim()
   let isNullOrWhiteSpace (s : string) = System.String.IsNullOrWhiteSpace s
   let split c (s : string) = s.Split([|c|]) |> Seq.ofArray
-  let ofChars : seq<char> -> string = Array.ofSeq >> System.String 
+  let ofChars : seq<char> -> string = Array.ofSeq >> fun x -> System.String(x)
   let charAt i (str : string) = str.ToCharArray().[i]
   let toBytes : string -> byte[] = System.Text.Encoding.ASCII.GetBytes
   let contains (sub : string) (str : string) = str.IndexOf(sub) >= 0 
-  let rev (str : string) = str |> Seq.rev |> ofChars 
-
-
+  let rev (str : string) = str |> Seq.toList |> List.rev |> ofChars 
 
 module Int = 
   let parse (s : string) = System.Int32.Parse(s)
@@ -35,3 +33,21 @@ module Regex =
       let x::xs= [ for g in m.Groups -> g.Value ]
       Some xs
     | false -> None
+
+  let getMatches pattern str  = 
+    seq { for m in  System.Text.RegularExpressions.Regex.Matches(str, pattern) do 
+            match m.Success with
+            | true -> yield [ for g in m.Groups -> g.Value ]
+            | false -> ()
+
+    } |> Seq.toList
+
+module List = 
+
+  let rec pairs l =
+      match l with
+      | [] | [_] -> []
+      | h :: t -> 
+          [for x in t do
+              yield h,x
+              yield! pairs t]
