@@ -75,52 +75,118 @@ module Samples =
 
   let endMinus = 
     [
+      //11th
       ([ []
          []
          []
          [ Generator Hydrogen; Generator Lithium; Chip Hydrogen; Chip Lithium ]
        ] |> toFloorState, 3)
       
+      //10th
       ([ []
          []
          [ Chip Hydrogen; Chip Lithium ]
          [ Generator Hydrogen; Generator Lithium]
        ] |> toFloorState, 2)
 
-      ([  []
-          []
-          [ Chip Hydrogen]
-          [ Generator Hydrogen; Generator Lithium; Chip Lithium]
-        ] |> toFloorState, 3)
-
-      ([ []
-         []
-         [ Generator Hydrogen; Generator Lithium; Chip Hydrogen]
-         [ Chip Lithium ]
-       ] |> toFloorState, 2)
-
-      // End Minus 4
+      //9th
       ( [ []
-          []
-          [ Chip Hydrogen; Chip Lithium ]
-          [ Generator Hydrogen; Generator Lithium]
-          
-      
+          [ ]
+          [ Chip Hydrogen]
+          [ Chip Lithium; Generator Lithium; Generator Hydrogen; ]
         ] |> toFloorState, 3
       )
+
+      //8th
+      ( [ []
+          [ ]
+          [ Generator Lithium; Generator Hydrogen; Chip Hydrogen]
+          [ Chip Lithium; ]
+        ] |> toFloorState, 2
+      )
+
+      //7th
+      ( [ []
+          [ ]
+          [ Generator Lithium; Generator Hydrogen]
+          [ Chip Lithium; Chip Hydrogen]
+        ] |> toFloorState, 3
+      )
+
+      //Sixth
+      ( [ []
+          [ ]
+          [ Generator Lithium; Generator Hydrogen; Chip Lithium; Chip Hydrogen]
+          []
+        ] |> toFloorState, 2
+      )
+
+      //Fifth
+      ( [ []
+          [ Chip Lithium; Chip Hydrogen]
+          [ Generator Lithium; Generator Hydrogen]
+          []
+        ] |> toFloorState, 1
+      )
+
+      //Fourth
+      ( [ [ Chip Lithium; Chip Hydrogen]
+          []
+          [ Generator Lithium; Generator Hydrogen]
+          []
+        ] |> toFloorState, 0
+      )
+
+      //Third
+      ( [ [ Chip Lithium;]
+          [ Chip Hydrogen]
+          [ Generator Lithium; Generator Hydrogen]
+          []
+        ] |> toFloorState, 1
+      )
+
+      //Second
+      ( [ [ Chip Lithium;]
+          []
+          [ Generator Lithium; Generator Hydrogen; Chip Hydrogen]
+          []
+        ] |> toFloorState, 2
+      )
+
+      //First
+      ( [ [ Chip Lithium;]
+          [ Generator Hydrogen; Chip Hydrogen]
+          [ Generator Lithium]
+          []
+        ] |> toFloorState, 1
+      )
+
+      // Initial
+      ( [ [ Chip Lithium; Chip Hydrogen]
+          [ Generator Hydrogen]
+          [ Generator Lithium]
+          []
+        ] |> toFloorState, 0
+      )
+
     ]
     |> List.mapi(fun i c -> i, c)
     |> Map.ofList
 
 
 
+//
+//let isDisallowed l = 
+//  let chipElements = l |> Seq.filter(isChip) |> Seq.map(getElement) |> Set.ofSeq 
+//  let generatorElements = l |> Seq.filter(isGenerator) |> Seq.map(getElement)  |> Set.ofSeq 
+//  let nonMatchedChips = chipElements - generatorElements
+//  let nonMatchedGenerators = generatorElements - chipElements
+//  nonMatchedChips.Count > 0 && generatorElements.Count > 0
 
-let isDisallowed l = 
+let isLegal l = 
   let chipElements = l |> Seq.filter(isChip) |> Seq.map(getElement) |> Set.ofSeq 
   let generatorElements = l |> Seq.filter(isGenerator) |> Seq.map(getElement)  |> Set.ofSeq 
-  let nonMatchedChips = chipElements - generatorElements
-  let nonMatchedGenerators = generatorElements - chipElements
-  nonMatchedChips.Count > 0 && generatorElements.Count > 0
+  generatorElements |> Seq.isEmpty || (chipElements -  generatorElements) |> Set.isEmpty
 
 
 (*
@@ -143,7 +209,7 @@ let validLiftContents floorContents =
   |> List.pairs
   |> List.map(fun (a,b) -> [a;b] |> Set.ofList)
   |> List.filter(fun can -> 
-    let isallowed = can |> isDisallowed |> not
+    let isallowed = can |> isLegal
     //printfn "Allowed: %b, Lift Contents %A" isallowed can
     isallowed)
   |> Set.ofList // Add single elements
@@ -153,7 +219,7 @@ let validFloorMoves (current : int) (liftPossibilities : Set<Component>) (curren
   current 
   |> getNextPossibleFloors
   |> List.map(fun f -> (f, currentState.[f] + liftPossibilities))
-  |> List.filter(snd >> isDisallowed >> not)
+  |> List.filter(snd >> isLegal)
   |> List.map(fst)
 
 
@@ -190,37 +256,60 @@ let prioritiseMostEmptry (s : int*FloorState) =
 
 let rec makeValidMoves currentFloor currentState visitedStates = 
   seq {
-    for (newFloor, newState) in (nextMoves currentFloor currentState) |> List.ofSeq |> List.sortBy prioritiseMostEmptry do
+    for (newFloor, newState) in (nextMoves currentFloor currentState) |> List.ofSeq  do
       if newState |> isSafe then 
+          //newState |> printState |> log "STATE: "
           yield Some (newState::visitedStates)
       else 
-        match (visitedStates |> List.collect(equivalentStates) |> List.contains newState) with
+        match (visitedStates |> List.collect(equivalentStates) |> List.exists((=) newState)) with
         | true -> yield None
         | false -> 
             yield! makeValidMoves newFloor newState (newState::visitedStates)
   }
 
-let rec strictlyDecreasing lastMin s =
-  let mutable lastMinimum = lastMin
-  seq {
-    for (Some next) in s do
-      if (next < lastMinimum) then 
-        yield next
-        lastMinimum <-next
-  }
+let depthM initialFloor initialState = 
+  let q = new System.Collections.Generic.Queue<_>()
+  let visitedStates = new System.Collections.Generic.HashSet<_>()
+  let visits = new System.Collections.Generic.List<_>()
 
-let thisGo = 3
+  q.Enqueue (initialFloor, initialState, 0)
+  while (q.Count <> 0) do
+    let (thisFloor, thisState, pathLength) = q.Dequeue()
+    if isSafe thisState then 
+      visits.Add (thisState, pathLength)
+
+    let next = nextMoves thisFloor thisState |> List.ofSeq
+
+    next
+    |> Seq.iter(fun (newFloor, newState) ->
+      let added = visitedStates.Add (newFloor, newState)
+      q.Enqueue (newFloor, newState, pathLength + 1))
+
+  visits
+
+
+let thisGo = 1
 let nextGo = thisGo - 1
 
 let (eState , eFloor) = Samples.endMinus.[thisGo]
 let (exectedState, expectedFloor) = Samples.endMinus.[nextGo]
 let z = nextMoves eFloor eState |> List.ofSeq
 
-let isValid = z |> Seq.map snd |> Seq.contains exectedState
-let seqMoves = 
-  makeValidMoves eFloor eState [] |> Seq.filter(Option.isSome) |> Seq.map(Option.map(fun s -> s.Length )) 
-  |> strictlyDecreasing System.Int32.MaxValue
-  |> Seq.take 3 |> Seq.toList
+let rec descending currentMin s  = 
+  seq {
+    let head = s |> Seq.head
+    if head < currentMin then
+      yield head
+      yield! descending head (s |> Seq.tail) 
+    else yield! descending currentMin (s |> Seq.tail) 
+  }
+
+let isValid = z |> Seq.map snd |> Seq.exists ((=) exectedState)
+
+let seqMoves = depthM eFloor eState
+//  makeValidMoves eFloor eState [] |> Seq.filter(Option.isSome) |> Seq.map(Option.map(fun s -> s.Length )) 
+//  |> descending (Some System.Int32.MaxValue)
+//  |> Seq.iter(printfn "Minima so far: %A")
 
 
 
