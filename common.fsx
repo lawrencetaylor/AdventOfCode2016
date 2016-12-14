@@ -51,3 +51,15 @@ module List =
           [for x in t do
               yield h,x
               yield! pairs t]
+
+
+open System
+open System.Security.Cryptography
+open System.Text
+
+module Cryptography = 
+  let md5 (stringData : string) : string =
+    use md5 = MD5.Create()
+    (StringBuilder(), md5.ComputeHash(stringData |> String.toBytes))
+    ||> Array.fold (fun sb b -> sb.Append(b.ToString("x2")))
+    |> string

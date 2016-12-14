@@ -3,14 +3,7 @@
 open Common
 
 open System
-open System.Security.Cryptography
 open System.Text
-
-let md5 (stringData : string) : string =
-  use md5 = MD5.Create()
-  (StringBuilder(), md5.ComputeHash(stringData |> String.toBytes))
-  ||> Array.fold (fun sb b -> sb.Append(b.ToString("x2")))
-  |> string
 
 let hasFiveLeadingZeros (str : string) = 
     let testString = String('0', 5)
@@ -18,8 +11,8 @@ let hasFiveLeadingZeros (str : string) =
 
 let getNext seed = 
   Seq.initInfinite(fun i -> sprintf "%s%i" seed i)
-  |> Seq.filter(md5 >> hasFiveLeadingZeros)
-  |> Seq.map(md5 >> String.charAt 5)
+  |> Seq.filter(Cryptography.md5 >> hasFiveLeadingZeros)
+  |> Seq.map(Cryptography.md5 >> String.charAt 5)
   |> Seq.take 8
 
 let partOne = getNext "abbhdwsy" |> String.ofChars // abbhdwsy
