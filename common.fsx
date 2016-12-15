@@ -19,11 +19,16 @@ module Int =
 
 let toString a = a.ToString()
 
-let modulo s y = y % s
-let minus s y = y - s
-let log label a= 
-  printfn "%s %A" label a
-  a
+//let modulo s y = y % s
+//let minus s y = y - s
+//let log label a= 
+//  printfn "%s %A" label a
+//  a
+
+let modulo (m : int) n =
+    let mod' = n % m
+    if sign mod' >= 0 then mod'
+    else abs m + mod'
 
 module Regex = 
   let tryMatch pattern str  = 
@@ -44,6 +49,16 @@ module Regex =
 
 module List = 
 
+  let permutations lst = 
+    let rec innerPermutations l thisPermutation = 
+      seq {
+        if l |> List.isEmpty then yield thisPermutation
+        else 
+          for element in l do
+            yield! innerPermutations (l |> List.filter((<>) element)) (element::thisPermutation)
+      }
+    innerPermutations lst []
+
   let rec pairs l =
       match l with
       | [] | [_] -> []
@@ -63,3 +78,6 @@ module Cryptography =
     (StringBuilder(), md5.ComputeHash(stringData |> String.toBytes))
     ||> Array.fold (fun sb b -> sb.Append(b.ToString("x2")))
     |> string
+
+
+let z = [0;1;2;3;4] |> List.permutations |> List.ofSeq |> List.length
