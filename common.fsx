@@ -20,10 +20,10 @@ module Int =
 let toString a = a.ToString()
 
 //let modulo s y = y % s
-//let minus s y = y - s
-//let log label a= 
-//  printfn "%s %A" label a
-//  a
+let minus s y = y - s
+let log label a= 
+  printfn "%s %A" label a
+  a
 
 let modulo (m : int) n =
     let mod' = n % m
@@ -81,3 +81,22 @@ module Cryptography =
 
 
 let z = [0;1;2;3;4] |> List.permutations |> List.ofSeq |> List.length
+
+let memoize f = 
+  let cache = new System.Collections.Generic.Dictionary<_,_>()
+  let mf a = 
+    if cache.ContainsKey a then cache.[a] else
+      let result = f a
+      cache.Add(a, result)
+      result
+  mf
+
+let time f = 
+  let sw = new System.Diagnostics.Stopwatch()
+  let tf a = 
+    sw.Start()
+    let result = f a
+    sw.Stop()
+    (result, sw.ElapsedMilliseconds)
+  tf
+    
