@@ -59,13 +59,24 @@ module List =
       }
     innerPermutations lst []
 
-  let rec pairs l =
-      match l with
-      | [] | [_] -> []
-      | h :: t -> 
-          [for x in t do
-              yield h,x
-              yield! pairs t]
+//  let rec pairs l =
+//      match l |> log "pairs" with
+//      | [] | [_] -> []
+//      | h :: t -> 
+//          [for x in t do
+//              yield h,x
+//              yield! pairs t]
+
+  let pairs l = 
+
+    let rec pairsInner ls found = 
+      match ls with 
+      | [] -> found
+      | x::xs -> 
+         pairsInner xs (found |> List.append [for t in xs -> (x,t)] )
+
+    pairsInner l []
+
 
 
 open System
@@ -82,7 +93,7 @@ module Cryptography =
 
 let z = [0;1;2;3;4] |> List.permutations |> List.ofSeq |> List.length
 
-let memoize f = 
+let cache f = 
   let cache = new System.Collections.Generic.Dictionary<_,_>()
   let mf a = 
     if cache.ContainsKey a then cache.[a] else
