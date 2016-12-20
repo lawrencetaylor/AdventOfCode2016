@@ -9,8 +9,6 @@ mirror '1' = '0'
 reverseAndMirror :: [Char] -> [Char]
 reverseAndMirror =  List.map mirror . List.reverse
 
-expanded str = str ++ "0" ++ (reverseAndMirror str)
-
 expand :: Int -> [Char] -> [Char]
 expand limit str
   | (List.length str) >= limit = List.take limit str
@@ -23,8 +21,6 @@ toCheckSumCharacter [a,b]
 
 nextCandidate :: [Char] -> [Char]
 nextCandidate = List.map toCheckSumCharacter . List.chunksOf 2 
-
-cLeng s = rem (List.length s) 2
 
 checkSum :: [Char] -> [Char]
 checkSum s
