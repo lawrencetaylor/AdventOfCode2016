@@ -30,6 +30,15 @@ let modulo (m : int) n =
     if sign mod' >= 0 then mod'
     else abs m + mod'
 
+open System.Text.RegularExpressions
+
+let (|Regex|_|) pattern input =
+    let m = Regex.Match(input, pattern)
+    if m.Success then Some(List.tail [ for g in m.Groups -> g.Value ])
+    else None
+
+    
+
 module Regex = 
   let tryMatch pattern str  = 
     let m = System.Text.RegularExpressions.Regex.Match(str, pattern)
@@ -67,6 +76,7 @@ module List =
 //              yield h,x
 //              yield! pairs t]
 
+  // distinct combinations (x,y) = (y,x)
   let pairs l = 
 
     let rec pairsInner ls found = 
@@ -76,6 +86,13 @@ module List =
          pairsInner xs (found |> List.append [for t in xs -> (x,t)] )
 
     pairsInner l []
+
+  let allPairs l = 
+    seq {
+      for x in l do
+        for y in l do
+          yield (x,y)
+    }
 
 
 
